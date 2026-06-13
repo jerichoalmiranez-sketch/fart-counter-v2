@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Global Fart Counter 🌍💨</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 80px;
+      background: linear-gradient(to bottom, #f5f5f5, #ffffff);
+    }
+
+    h1 {
+      font-size: 48px;
+    }
+
+    #count {
+      font-size: 50px;
+      margin: 20px;
+      transition: transform 0.15s ease;
+    }
+
+    .fart-btn {
+      font-size: 32px;
+      padding: 20px 50px;
+      border: none;
+      border-radius: 20px;
+      background: black;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      margin-top: 20px;
+    }
+
+    .fart-btn:active {
+      transform: scale(0.9);
+    }
+
+    #feed {
+      margin-top: 40px;
+      font-size: 16px;
+      color: #333;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+
+    .card {
+      background: #fff;
+      padding: 10px;
+      margin: 8px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🌍 Global Fart Counter</h1>
+
+<div id="count">Loading...</div>
+
+<button class="fart-btn" onclick="fart()">💨 FART</button>
+
+<h3>📈 Live Activity Feed</h3>
+<div id="feed"></div>
+
+<audio id="sound">
+  <source src="https://www.soundjay.com/human/sounds/fart-01.mp3" type="audio/mpeg">
+</audio>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, runTransaction, onValue, push, limitToLast, query }
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// 🔥 YOUR FIREBASE CONFIG (KEEP YOURS IF DIFFERENT)
+const firebaseConfig = {
+  apiKey: "AIzaSyB_W2kYalnK_BIZc3hYj2E4yXBf68C-Ke0",
+  authDomain: "fart-counter-f86e8.firebaseapp.com",
+  databaseURL: "https://fart-counter-f86e8-default-rtdb.firebaseio.com",
+  projectId: "fart-counter-f86e8",
+  storageBucket: "fart-counter-f86e8.firebasestorage.app",
+  messagingSenderId: "194705501601",
+  appId: "1:194705501601:web:96e1ceacc0c44015c62fe0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const counterRef = ref(db, "fartCount");
+const feedRef = ref(db, "feed");
+
+// 🌍 LIVE COUNTER
+onValue(counterRef, (snapshot) => {
+  const el = document.getElementById("count");
+  el.innerText = Number(snapshot.val()).toLocaleString();
+
+  el.style.transform = "scale(1.2)";
+  setTimeout(() => el.style.transform = "scale(1)", 100);
+});
+
+// 💨 FART ACTION
+window.fart = function () {
+
+  // increase global counter
+  runTransaction(counterRef, (current) => {
+    return (current || 9000000000) + 1;
+  });
+
+  // sound
+  document.getElementById("sound").play();
+
+  // feed entry
+  const messages = [
+    "Someone just farted 💨",
+    "A legendary fart was released 🌍",
+    "Global fart detected 📡",
+    "One user contributed to history 💨"
+  ];
+
+  push(feedRef, {
+    text: messages[Math.floor(Math.random() * messages.length)],
+    time: Date.now()
+  });
+};
+
+// 📈 LIVE FEED
+onValue(query(feedRef, limitToLast(10)), (snapshot) => {
+  const feed = document.getElementById("feed");
+  feed.innerHTML = "";
+
+  const data = snapshot.val();
+  if (!data) return;
+
+  Object.values(data).reverse().forEach(item => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerText = item.text;
+    feed.appendChild(div);
+  });
+});
+</script>
+
+</body>
+</html>
